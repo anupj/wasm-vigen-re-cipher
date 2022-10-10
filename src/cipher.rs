@@ -138,5 +138,43 @@ pub(crate) fn decode(
 ) -> Result<String, ErrorCode> {
     // get size of message and key
     let msg_size = enc_msg.chars().count();
-    todo!();
+    let key_size = key.chars().count();
+
+    // initialisations
+    let mut decrypted_msg = "".to_string();
+
+    // if key has a different size, then complete it
+    let mut key_e = key.to_string();
+    if msg_size != key_size {
+        key_e = complete_key(key, msg_size);
+    }
+
+    // convert to char vectors
+    let key_chars: Vec<_> = key_e.chars().collect();
+    let msg_chars: Vec<_> = enc_msg.to_string().chars().collect();
+
+    // decrypt message
+    for letter in 0..msg_size {
+        let mut msg_index = 0;
+        let key_index = index_finder(key_chars[letter], &vig_mat)?;
+        for c in 0..vig_mat.0.len() {
+            if vig_mat.0[key_index][c] == msg_chars[letter] {
+                msg_index = c;
+            }
+        }
+        decrypted_msg.push(char_finder(msg_index, &vig_mat)?);
+    }
+
+    Ok(decrypted_msg)
+}
+
+// Returns the char value of
+// an index in the Vigenére Matrix
+fn char_finder(index: usize, mat: &VigMatrixWrap) -> Result<char, ErrorCode> {
+    for (idx, chi) in mat.0[0].iter().enumerate() {
+        if index == idx {
+            return Ok(*chi);
+        }
+    }
+    Err(ErrorCode::InvalidIndex(index))
 }
