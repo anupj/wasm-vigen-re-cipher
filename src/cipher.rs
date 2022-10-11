@@ -7,18 +7,18 @@ pub(crate) const SIZE: usize = 192;
 #[derive(Clone, Copy)]
 pub(crate) struct DictWrap(pub(crate) [char; SIZE]);
 
-#[derive(Clone, Copy)]
+#[derive(Debug)]
 pub(crate) enum ErrorCode {
     InvalidChar(char),
     InvalidIndex(usize),
 }
 
 // Creates and returns a new dictionary
-// for the Vigenére matrix
+// for the Vigenère matrix
 impl DictWrap {
     pub(crate) fn new() -> DictWrap {
         // Every ASCII character that !is_control().
-        let mut dict = r##" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"##.to_string();
+        let mut dict = r##"!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"##.to_string();
         // Add carriage return to support in web textarea
         dict.push('\n');
         dict.push('\r');
@@ -43,7 +43,7 @@ impl DictWrap {
 #[derive(Clone, Copy)]
 pub(crate) struct VigMatrixWrap(pub(crate) [[char; SIZE]; SIZE]);
 
-// Creates and returns a new Vigenére Matrix
+// Creates and returns a new Vigenère Matrix
 impl VigMatrixWrap {
     pub(crate) fn new() -> VigMatrixWrap {
         let mut matrix: VigMatrixWrap = VigMatrixWrap([[' '; SIZE]; SIZE]);
@@ -97,7 +97,7 @@ pub(crate) fn encode(msg: &str, key: &str, vig_mat: VigMatrixWrap) -> Result<Str
     }
 
     // convert to char vectors
-    let key_chars: Vec<_> = key_e.chars().collect();
+    let key_chars: Vec<_> = key_e.to_string().chars().collect();
     let msg_chars: Vec<_> = msg.to_string().chars().collect();
 
     // encrypt message
@@ -150,7 +150,7 @@ pub(crate) fn decode(
     }
 
     // convert to char vectors
-    let key_chars: Vec<_> = key_e.chars().collect();
+    let key_chars: Vec<_> = key_e.to_string().chars().collect();
     let msg_chars: Vec<_> = enc_msg.to_string().chars().collect();
 
     // decrypt message
@@ -168,13 +168,85 @@ pub(crate) fn decode(
     Ok(decrypted_msg)
 }
 
+// Decodes a message (msg) with a key (key)
+// using a Vigenère Matrix (vig_mat).
+// Returns the blank space char ' ' as '&nbsp;'
+// so that consecutive blank spaces are
+// rendered properly on the browser
+pub(crate) fn decode_web(
+    enc_msg: &str,
+    key: &str,
+    vig_mat: VigMatrixWrap,
+) -> Result<String, ErrorCode> {
+    let decoded = decode(enc_msg, key, vig_mat)?;
+    let mut decoded_web = "".to_string();
+    for ch in decoded.chars() {
+        match ch {
+            ' ' => decoded_web.push_str("&nbsp;"),
+            '\n' | '\r' => decoded_web.push_str("<br>"),
+            _ => decoded_web.push(ch),
+        };
+    }
+    Ok(decoded_web)
+}
+
 // Returns the char value of
 // an index in the Vigenére Matrix
 fn char_finder(index: usize, mat: &VigMatrixWrap) -> Result<char, ErrorCode> {
-    for (idx, chi) in mat.0[0].iter().enumerate() {
+    for (idx, val) in mat.0[0].iter().enumerate() {
         if index == idx {
-            return Ok(*chi);
+            return Ok(*val);
         }
     }
     Err(ErrorCode::InvalidIndex(index))
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::{assert_eq, assert_ne};
+
+    #[test]
+    fn test_encode() {
+        let vig_mat = VigMatrixWrap::new();
+        let key = "°¡! RüST íS CóÓL ¡!°";
+        let message = "Hello, World!";
+        let encoded = encode(message, key, vig_mat).unwrap();
+        assert_eq!(message, decode(&encoded, key, vig_mat).unwrap());
+
+        let vig_mat = VigMatrixWrap::new();
+        let key = "°¡! RüST íS CóÓL ¡!°";
+        let message = "Anup Jadhav";
+        let encoded = encode(message, key, vig_mat).unwrap();
+        let decoded = decode(&encoded, key, vig_mat).unwrap();
+        // println!("key      :##{}##:", key);
+        // println!("message  :##{}##:", message);
+        // println!("encoded  :##{}##:", encoded);
+        // println!("decoded  :##{}##:", decoded);
+        assert_eq!(message, decoded);
+
+        let vig_mat = VigMatrixWrap::new();
+        let key = "°¡! RüST íS CóÓL ¡!°";
+        let message = "!!!!";
+        let encoded = encode(message, key, vig_mat).unwrap();
+        assert_eq!(message, decode(&encoded, key, vig_mat).unwrap());
+
+        let vig_mat = VigMatrixWrap::new();
+        let key = "°¡! RüST íS CóÓL ¡!°";
+        let message = "WhátisApp+éars to   be the   problem here__°¿¿¿¿¿!!!!++++{{{{{{{}}}}}}}";
+        let encoded = encode(message, key, vig_mat).unwrap();
+        assert_eq!(message, decode(&encoded, key, vig_mat).unwrap());
+    }
+
+    #[test]
+    fn test_complex() {
+        let vig_mat = VigMatrixWrap::new();
+        let key = "°¡! RüST íS CóÓL ¡!°";
+        let message = r##"´+++´[[[    {{{'''''""""()*&^   
+            $2374954904890~~~11939455    
+            7+a+e{eíóúúááÉú}"}}}]]]"##;
+        let encoded = encode(message, key, vig_mat).unwrap();
+        assert_eq!(message, decode(&encoded, key, vig_mat).unwrap());
+    }
 }
