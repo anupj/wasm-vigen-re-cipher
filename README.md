@@ -1,5 +1,5 @@
 # WebAssembly Vigenère cipher demo
-A simple [Rust] and [WebAssembly] real-time implementation of the [Vigénere Cipher] utilizing the [Sycamore] reactive library, [Trunk] for build & bundle, and [Water.css] for styling.
+A simple [Rust] and [WebAssembly] real-time implementation of the [Vigenère Cipher] utilizing the [Sycamore] reactive library, [Trunk] for build & bundle, and [Water.css] for styling.
 
 Check out the [demo here].
 

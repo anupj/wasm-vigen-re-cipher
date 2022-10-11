@@ -81,7 +81,7 @@ fn complete_key(key: &str, msg_size: usize) -> String {
 }
 
 // Encodes a message (msg) with a key(key)
-// using a Vigenére matrix (vig_mat)
+// using a Vigenère Matrix (vig_mat)
 pub(crate) fn encode(msg: &str, key: &str, vig_mat: VigMatrixWrap) -> Result<String, ErrorCode> {
     // get size of message and key
     let msg_size = msg.chars().count();
@@ -108,7 +108,7 @@ pub(crate) fn encode(msg: &str, key: &str, vig_mat: VigMatrixWrap) -> Result<Str
     Ok(encrypted_msg)
 }
 
-// Returns the matching character in the Vigenére matrix,
+// Returns the matching character in the Vigenère Matrix,
 // depending on the header (msg_char) and column (key_char)
 // characters provided
 fn vig_matcher(matrix: &VigMatrixWrap, msg_char: char, key_char: char) -> Result<char, ErrorCode> {
@@ -119,7 +119,7 @@ fn vig_matcher(matrix: &VigMatrixWrap, msg_char: char, key_char: char) -> Result
 }
 
 // Returns the index value of a char
-// in the Vigenére matrix
+// in the Vigenère Matrix
 fn index_finder(ch: char, matrix: &VigMatrixWrap) -> Result<usize, ErrorCode> {
     for (index, val) in matrix.0[0].iter().enumerate() {
         if ch == *val {
@@ -130,7 +130,7 @@ fn index_finder(ch: char, matrix: &VigMatrixWrap) -> Result<usize, ErrorCode> {
 }
 
 // Decodes an encoded message (enc_msg) with
-// a key (key) and a Vigenére Matrix (vig_mat)
+// a key (key) and a Vigenère Matrix (vig_mat)
 pub(crate) fn decode(
     enc_msg: &str,
     key: &str,
@@ -191,7 +191,7 @@ pub(crate) fn decode_web(
 }
 
 // Returns the char value of
-// an index in the Vigenére Matrix
+// an index in the Vigenère Matrix
 fn char_finder(index: usize, mat: &VigMatrixWrap) -> Result<char, ErrorCode> {
     for (idx, val) in mat.0[0].iter().enumerate() {
         if index == idx {
@@ -200,7 +200,6 @@ fn char_finder(index: usize, mat: &VigMatrixWrap) -> Result<char, ErrorCode> {
     }
     Err(ErrorCode::InvalidIndex(index))
 }
-
 
 #[cfg(test)]
 mod tests {
