@@ -1,1 +1,12 @@
+.DS_Store
+node_modules
+.tmp
+npm-debug.log
+.code/
+
+# ide
+.vscode/
+.idea/
+
+#rust
 /target
