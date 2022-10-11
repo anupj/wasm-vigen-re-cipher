@@ -3,7 +3,7 @@ A simple [Rust] and [WebAssembly] real-time implementation of the [Vigénere Cip
 
 Check out the [demo here].
 
-*Credit*: Originally developed by [Rodrigo Santiago] and wonderfully explained in this [blog post].
+**Credit: Originally developed by [Rodrigo Santiago] and wonderfully explained in this [blog post].**
 
 [WebAssembly]:https://webassembly.org/
 [Sycamore]:https://sycamore-rs.netlify.app/
